@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Amor</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23e11d48' d='M23.6 4.6c-2.4 0-4.6 1.2-6 3.1C15.0 5.8 12.8 4.6 10.4 4.6 6.3 4.6 3 7.9 3 12c0 7.2 13 15.4 13 15.4s13-8.2 13-15.4c0-4.1-3.3-7.4-7.4-7.4z'/%3E%3C/svg%3E">
+    <style>
+        #bateria {
+            font-size: 1em;
+            margin: 10px auto 0 auto;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+            border-radius: 8px;
+            background: #f9f9f9;
+            width: max-content;
+            flex-direction: row;
+        }
+        .barra-bateria {
+            width: 60px;
+            height: 16px;
+            border: 1px solid #888;
+            border-radius: 4px;
+            margin-right: 10px;
+            background: #eee;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+        }
+        .nivel-bateria {
+            height: 100%;
+            border-radius: 3px 0 0 3px;
+            transition: width 0.3s;
+        }
+        .info-bateria {
+            font-size: 0.95em;
+        }
+    </style>
+</head>
+<body>
+    <div id="bateria">
+        <div class="barra-bateria">
+            <div class="nivel-bateria" style="width:0%;background:#ccc"></div>
+        </div>
+        <span class="info-bateria">Revisando batería...</span>
+    </div>
+    <script>
+        function colorPorNivel(nivel) {
+            if (nivel > 60) return "#4caf50";
+            if (nivel > 30) return "#ffc107";
+            return "#f44336";
+        }
+
+        function mostrarBateria(battery) {
+            const nivel = Math.round(battery.level * 100);
+            const cargando = battery.charging ? "Sí" : "No";
+            const barra = document.querySelector('.nivel-bateria');
+            barra.style.width = nivel + "%";
+            barra.style.background = colorPorNivel(nivel);
+            document.querySelector('.info-bateria').textContent =
+                `Nivel: ${nivel}% | ¿Cargando?: ${cargando}`;
+        }
+
+        if ('getBattery' in navigator) {
+            navigator.getBattery().then(function(battery) {
+                mostrarBateria(battery);
+                battery.addEventListener('levelchange', () => mostrarBateria(battery));
+                battery.addEventListener('chargingchange', () => mostrarBateria(battery));
+            });
+        } else {
+            document.querySelector('.info-bateria').textContent =
+                "La API de batería no es compatible con este navegador.";
+        }
+    </script>
+
+    <h2>bienvenida, ya vise tu bateria?</h2>
+    <!-- Apartado de preguntas -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <div class="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md border border-gray-200">
+        <h3 class="text-xl font-semibold mb-4 text-gray-800">¿Tienes una pregunta?</h3>
+        <form id="form-pregunta" class="space-y-4">
+            <textarea id="pregunta" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400" rows="3" placeholder="Escribe tu pregunta aquí..." required></textarea>
+            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">Enviar por WhatsApp</button>
+        </form>
+        <p id="mensaje-exito" class="hidden mt-3 text-green-600 font-medium">¡Redirigiendo a WhatsApp!</p>
+    </div>
+    <script>
+    document.getElementById('form-pregunta').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const pregunta = encodeURIComponent(document.getElementById('pregunta').value.trim());
+        if (pregunta) {
+            document.getElementById('mensaje-exito').classList.remove('hidden');
+            const numero = '50372192732';
+            const url = `https://wa.me/${numero}?text=${pregunta}`;
+            setTimeout(() => {
+                window.open(url, '_blank');
+                document.getElementById('mensaje-exito').classList.add('hidden');
+                document.getElementById('form-pregunta').reset();
+            }, 800);
+        }
+    });
+    </script>
+    <!-- Calendario de Aniversario -->
+    <div class="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md border border-pink-200">
+        <h3 class="text-xl font-semibold mb-4 text-pink-600">Nuestro Calendario de Aniversario</h3>
+        <div id="calendario-aniversario"></div>
+    </div>
+    <script>
+    function generarCalendario(mes, anio) {
+        const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        const fechaHoy = new Date();
+        const diaAniversario = 19;
+        const esAniversario = (d, m) => d === diaAniversario;
+        const esHoy = (d, m, y) =>
+            d === fechaHoy.getDate() && m === fechaHoy.getMonth() && y === fechaHoy.getFullYear();
+
+        const primerDia = new Date(anio, mes, 1).getDay();
+        const diasMes = new Date(anio, mes + 1, 0).getDate();
+
+        let html = '<table class="w-full text-center">';
+        html += '<thead><tr>' + diasSemana.map(d => `<th class="py-1">${d}</th>`).join('') + '</tr></thead><tbody><tr>';
+
+        for (let i = 0; i < primerDia; i++) html += '<td></td>';
+
+        for (let dia = 1; dia <= diasMes; dia++) {
+            const esAniv = esAniversario(dia, mes);
+            const esDiaHoy = esHoy(dia, mes, anio);
+            let clases = "py-1 px-2 rounded";
+            if (esAniv) clases += " bg-pink-300 text-pink-900 font-bold";
+            if (esDiaHoy) clases += " border-2 border-blue-400";
+            html += `<td class="${clases}">${dia}</td>`;
+            if ((primerDia + dia) % 7 === 0 && dia !== diasMes) html += '</tr><tr>';
+        }
+
+        const celdasRestantes = (7 - (primerDia + diasMes) % 7) % 7;
+        for (let i = 0; i < celdasRestantes; i++) html += '<td></td>';
+
+        html += '</tr></tbody></table>';
+        return html;
+    }
+
+    let mesActual = 11; // Diciembre (0-indexed)
+    let anioActual = 2024;
+
+    function mostrarCalendario(mes, anio) {
+        const meses = [
+            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        ];
+        const contenedor = document.getElementById('calendario-aniversario');
+        contenedor.innerHTML = `
+            <div class="flex items-center justify-between mb-2">
+                <button id="prev-mes" class="px-2 py-1 rounded bg-pink-100 hover:bg-pink-200">&lt;</button>
+                <span class="font-semibold text-pink-700">${meses[mes]} ${anio}</span>
+                <button id="next-mes" class="px-2 py-1 rounded bg-pink-100 hover:bg-pink-200">&gt;</button>
+            </div>
+            ${generarCalendario(mes, anio)}
+            <div class="mt-2 text-sm text-pink-600">El <span class="font-bold">19</span> de cada mes es nuestro aniversario 💖</div>
+        `;
+
+        document.getElementById('prev-mes').onclick = () => {
+            mesActual--;
+            if (mesActual < 0) {
+                mesActual = 11;
+                anioActual--;
+            }
+            mostrarCalendario(mesActual, anioActual);
+        };
+        document.getElementById('next-mes').onclick = () => {
+            mesActual++;
+            if (mesActual > 11) {
+                mesActual = 0;
+                anioActual++;
+            }
+            mostrarCalendario(mesActual, anioActual);
+        };
+    }
+
+    mostrarCalendario(mesActual, anioActual);
+    </script>
+    <style>
+        body {
+            background: #ffe4ec;
+        }
+        
+    </style>
+    <div class="flex justify-center mt-8 mb-8">
+        <a href="flores.html" class="bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2 px-6 rounded-full shadow transition">
+            Ir a la siguiente página
+        </a>
+    </div>
+    <div class="flex justify-center mt-8 mb-8">
+        <a href="bts.html" class="bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2 px-6 rounded-full shadow transition">
+            Ir a la siguiente página
+        </a>
+    </div>
+
+</body>
+</html>
